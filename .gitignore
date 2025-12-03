@@ -1,3 +1,4 @@
 env
 .env
 *_initial.py
+00*_*.py
