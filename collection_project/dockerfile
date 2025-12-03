@@ -1,0 +1,21 @@
+FROM python:3.9-slim
+
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+EXPOSE 8000
+
+WORKDIR /collection_project
+
+RUN apt-get update && apt-get install -y curl \
+    && apt-get install -y --no-install-recommends postgresql-client \
+    && pip install --upgrade pip
+
+# Build context'teki her şeyi kopyala
+COPY . .
+
+# --- requirements.txt için birkaç olası yolu dene, hiçbiri yoksa build'i KIRMA ---
+RUN pip install --no-cache-dir -r ./collection_project/config/requirements.txt
+RUN chmod +x config/start.sh || echo "config/start.sh yok, chmod atlanıyor."
+
+ENTRYPOINT ["./config/start.sh"]
