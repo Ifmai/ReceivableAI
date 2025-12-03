@@ -1,5 +1,5 @@
 from django.urls import path
-from .Api.view import *
+from .Api.InvoiceView import *
 
 urlpatterns = [
 	path("add/", InvoiceCreateView.as_view(), name='invoice_create'),
