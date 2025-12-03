@@ -1,0 +1,40 @@
+volumes:
+  postgres_data:
+
+networks:
+  ai-collections-network:
+    driver: bridge
+
+services:
+  collection_project:
+    image: ifmai/collection_project_image
+    container_name: collection_project_container
+    build:
+      context: .
+      dockerfile: ./collection_project/dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./collection_project:/collection_project
+    env_file:
+      - .env
+    networks:
+      - ai-collections-network
+    restart: always
+    depends_on:
+      - collection_project_db
+
+  collection_project_db:
+    image: postgres:16
+    container_name: collection_project_db_container
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - ai-collections-network
+    restart: always
