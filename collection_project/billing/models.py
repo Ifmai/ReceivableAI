@@ -34,3 +34,12 @@ class Invoice(models.Model):
 
 	def __str__(self):
 		return f'{self.external_invoice_id} {self.customer}'
+
+	class Meta:
+		ordering = [
+        models.Case(
+            models.When(status='OVERDUE', then=0),
+            default=1
+        ),
+        'due_date'
+    ]

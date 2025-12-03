@@ -15,4 +15,4 @@ class Customer (models.Model):
 		return f'{self.name}'
 	class Meta:
 		db_table = 'customers_customer'
-
+		ordering = ['name']
