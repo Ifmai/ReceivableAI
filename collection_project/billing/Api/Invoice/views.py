@@ -1,9 +1,13 @@
 from ...Models.InvoiceModel import Invoice
 from utils.sign import decode_id
+from .filters import InvoiceFilter
 from rest_framework import generics
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import NotFound
+from rest_framework.filters import OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from .serializers import InvoiceSerializer, InvoiceEncodeSerializer
+
 
 class InvoiceCreateView(generics.CreateAPIView):
 	queryset = Invoice.objects.all()
@@ -12,6 +16,9 @@ class InvoiceCreateView(generics.CreateAPIView):
 class InvoiceListView(generics.ListAPIView):
 	queryset = Invoice.objects.all()
 	serializer_class = InvoiceEncodeSerializer
+	
+	filter_backends = [DjangoFilterBackend, OrderingFilter]
+	filterset_class = InvoiceFilter
 
 class InvoiceRetrieveView(generics.RetrieveAPIView):
 	queryset = Invoice.objects.all()

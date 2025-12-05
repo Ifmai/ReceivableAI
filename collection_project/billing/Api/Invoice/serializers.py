@@ -12,7 +12,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
 class InvoiceEncodeSerializer(serializers.ModelSerializer):
 	id = serializers.SerializerMethodField()
-	customer = serializers.CharField(source='customer.name', read_only=True)
+	customer = serializers.SerializerMethodField()
 
 	class Meta:
 		model = Invoice
@@ -20,3 +20,6 @@ class InvoiceEncodeSerializer(serializers.ModelSerializer):
 
 	def get_id(self, obj):
 		return encode_id(obj.pk)
+	
+	def get_customer(self, obj):
+		return encode_id(obj.customer_id)
