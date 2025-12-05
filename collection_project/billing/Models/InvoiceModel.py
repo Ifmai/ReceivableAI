@@ -1,7 +1,6 @@
 from django.db import models
 from django.db.models import Sum
-from datetime import date
-
+from datetime import date, timedelta
 class Currency(models.TextChoices):
 	USD = "USD", "US Dollar"
 	EUR = "EUR", "Euro"
@@ -12,6 +11,20 @@ class Status(models.TextChoices):
 	PAID = "PAID", "PAID"
 	OVERDUE = "OVERDUE", "OVERDUE"
 	CANCELLED = "CANCELLED", "CANCELLED"
+
+
+class InvoiceQuerySet(models.QuerySet):
+
+	def upcoming(self, days=7):
+		print("days:", days)
+		today = date.today()
+		end_date = today + timedelta(days)
+
+		return self.filter(
+			status=Status.PENDING,
+			due_date__gte=today,
+			due_date__lte=end_date
+		)
 
 class Invoice(models.Model):
 	customer = models.ForeignKey('customers.Customer', on_delete=models.CASCADE, related_name='invoices')
@@ -34,6 +47,8 @@ class Invoice(models.Model):
 	comment = models.TextField(null=True, blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
+
+	objects = InvoiceQuerySet.as_manager()
 
 	def __str__(self):
 		return f'{self.external_invoice_id} {self.customer} {self.total_price}'
