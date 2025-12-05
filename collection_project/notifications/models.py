@@ -11,7 +11,7 @@ class StatusChooise(models.TextChoices):
 	DRAFT = 'DRAFT', 'DRAFT'
 
 class ReminderLog(models.Model):
-	invoice = models.ForeignKey('billing.Invoice', related_name='reminders')
+	invoice = models.ForeignKey('billing.Invoice', on_delete=models.CASCADE, related_name='reminders')
 	channel = models.CharField(
 		max_length=6, 
 		null=False, 
@@ -20,7 +20,7 @@ class ReminderLog(models.Model):
 		default=ChannelChoise.EMAIL
 	)
 	sent_at = models.DateTimeField()
-	subject = models.CharField(max_length=100, blank=True, null=True, default=invoice.source_system)
+	subject = models.CharField(max_length=100, blank=True, null=True)
 	status = models.CharField(
 		max_length=6,
 		choices=StatusChooise.choices,
