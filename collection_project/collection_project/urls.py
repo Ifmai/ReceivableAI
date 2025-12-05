@@ -20,7 +20,7 @@ from utils.health import HealthCheckView
 urlpatterns = [
     path('admin/', admin.site.urls),
 	path('api/customers/', include('customers.urls')),
-    path('api/billing/', include('billing.urls')),
+    path('api/billing/', include('billing.Api.urls')),
 	path('api/accounts/', include('accounts.urls')),
 	path('notifications/', include('notifications.urls')),
 	path('api/health/', HealthCheckView.as_view(), name='health_check'),

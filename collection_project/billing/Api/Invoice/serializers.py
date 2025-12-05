@@ -1,4 +1,4 @@
-from ..models import Invoice
+from ...Models.InvoiceModel import Invoice
 from utils.sign import encode_id
 from rest_framework import serializers
 
@@ -7,7 +7,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Invoice
 		fields = '__all__'
-		read_only_fields = ['id', 'created_at', 'update_at']
+		read_only_fields = ['id', 'created_at', 'update_at', 'paid_amount']
 
 
 class InvoiceEncodeSerializer(serializers.ModelSerializer):
