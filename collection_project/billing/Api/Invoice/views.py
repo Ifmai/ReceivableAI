@@ -34,9 +34,27 @@ class InvoiceUpcomingView(generics.ListAPIView):
 		if days < 0:
 			raise ValidationError({"days": "Days cannot be negative."})
 		elif days > 365:
-			raise ValidationError({"days:": "Days cannot be big 365"})
+			raise ValidationError({"days:": "Days cannot be big 365."})
 		
 		return Invoice.objects.upcoming(days=days)
+
+class InvoiceOverDueView(generics.ListAPIView):
+	serializer_class = InvoiceEncodeSerializer
+
+	def get_queryset(self):
+		min_days_overdue = self.request.query_params.get('days', 0)
+
+		try:
+			min_days_overdue = int(min_days_overdue)
+		except ValueError:
+			raise ValidationError({"days": "Invalid params. Days only number."})
+
+		if min_days_overdue < 0:
+			raise ValidationError({"Days": "Days cannot be negative."})
+		if min_days_overdue > 365:
+			raise ValidationError({"Days": "Days cannot be big 365."})
+		
+		return Invoice.objects.overdue(min_days_overdue=min_days_overdue)
 
 class InvoiceRetrieveView(generics.RetrieveAPIView):
 	queryset = Invoice.objects.all()

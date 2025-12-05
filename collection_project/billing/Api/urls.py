@@ -10,9 +10,10 @@ urlpatterns = [
 	
 	#Invoice Get
 	path("invoice/list/", InvoiceListView.as_view(), name='invoice_list'),
-	path("invoices/upcoming/", InvoiceUpcomingView.as_view(), name='invoice_list'),
+	path("invoices/upcoming/", InvoiceUpcomingView.as_view(), name='invoice_upcoming'),
+	path("invoice/overdue/", InvoiceOverDueView.as_view(), name='invoice_overdue'),
 	path("invoice/<str:encrypted_id>/", InvoiceRetrieveView.as_view(), name='invoice_retrieve'),
-
+	
 	#Invoice Update Delete 
 	path("invoice/update/<str:encrypted_id>/", InvoiceUpdateView.as_view(), name='invoice_update'),
 	path("invoice/delete/<str:encrypted_id>/", InvoiceDeleteView.as_view(), name='invoice_delete'),

@@ -16,7 +16,6 @@ class Status(models.TextChoices):
 class InvoiceQuerySet(models.QuerySet):
 
 	def upcoming(self, days=7):
-		print("days:", days)
 		today = date.today()
 		end_date = today + timedelta(days)
 
@@ -25,6 +24,19 @@ class InvoiceQuerySet(models.QuerySet):
 			due_date__gte=today,
 			due_date__lte=end_date
 		)
+	
+	def overdue(self, min_days_overdue=0):
+		if min_days_overdue != 0:
+			today = date.today()
+			end_date = today - timedelta(min_days_overdue)
+
+			return self.filter(
+				status=Status.OVERDUE,
+				due_date__gte=end_date,
+				due_date__lte=today
+			)
+		else:
+			return self.filter(status=Status.OVERDUE)
 
 class Invoice(models.Model):
 	customer = models.ForeignKey('customers.Customer', on_delete=models.CASCADE, related_name='invoices')
