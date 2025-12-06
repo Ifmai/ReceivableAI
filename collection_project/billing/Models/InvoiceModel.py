@@ -80,6 +80,12 @@ class Invoice(models.Model):
 		self.save(update_fields=['status', 'paid_amount'])
 
 	class Meta:
+		constraints = [
+			models.UniqueConstraint(
+				fields=['source_system', 'external_invoice_id'],
+				name='source_external_unuqie'
+			)
+		]
 		ordering = [
         models.Case(
             models.When(status='OVERDUE', then=0),
