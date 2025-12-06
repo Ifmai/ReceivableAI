@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from .Invoice.views import *
 from .Payments.views import *
 
@@ -18,4 +18,7 @@ urlpatterns = [
 	#Payment Urls End
 
 
+	#Integration Urls (n8n vb. için) Start
+	path("integrations/", include("billing.Api.N8N.urls")),
+	#Integration Urls (n8n vb. için) End
 ]

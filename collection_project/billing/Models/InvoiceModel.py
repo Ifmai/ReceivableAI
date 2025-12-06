@@ -1,6 +1,8 @@
 from django.db import models
 from django.db.models import Sum
 from datetime import date, timedelta
+from django.db.models import Q
+
 class Currency(models.TextChoices):
 	USD = "USD", "US Dollar"
 	EUR = "EUR", "Euro"
@@ -37,6 +39,20 @@ class InvoiceQuerySet(models.QuerySet):
 			)
 		else:
 			return self.filter(status=Status.OVERDUE)
+
+	def reminder(self, reminder_days=7):
+		today = date.today()
+		end_date = today + timedelta(reminder_days)
+
+		qs = self.filter(
+			Q(status=Status.OVERDUE) |
+			Q(
+				status=Status.PENDING,
+				due_date__gte = today,
+				due_date__lte = end_date
+	 		)
+		)
+		return qs
 
 class Invoice(models.Model):
 	customer = models.ForeignKey('customers.Customer', on_delete=models.CASCADE, related_name='invoices')
