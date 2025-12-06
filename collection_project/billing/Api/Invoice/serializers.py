@@ -5,8 +5,6 @@ from rest_framework.exceptions import NotFound
 from rest_framework.exceptions import ValidationError
 
 class InvoiceSerializer(serializers.ModelSerializer):
-	#customer = serializers.CharField(source='customer.name', read_only=True)
-	#customer_name = serializers.CharField(source='customer.name', read_only=True)
 	class Meta:
 		model = Invoice
 		fields = '__all__'

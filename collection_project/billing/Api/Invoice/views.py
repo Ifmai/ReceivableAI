@@ -56,35 +56,9 @@ class InvoiceOverDueView(generics.ListAPIView):
 		
 		return Invoice.objects.overdue(min_days_overdue=min_days_overdue)
 
-class InvoiceRetrieveView(generics.RetrieveAPIView):
+class InvoiceDetailView(generics.RetrieveUpdateDestroyAPIView):
 	queryset = Invoice.objects.all()
 	serializer_class = InvoiceEncodeSerializer
-	lookup_url_kwarg = "encrypted_id"
-
-	def get_object(self):
-		enc_id = self.kwargs['encrypted_id']
-		try:
-			pk = decode_id(enc_id)
-		except:
-			raise NotFound("Invoice Not Found")
-		return get_object_or_404(Invoice, pk=pk)
-	
-class InvoiceUpdateView(generics.UpdateAPIView):
-	queryset = Invoice.objects.all()
-	serializer_class = InvoiceSerializer
-	lookup_url_kwarg = "encrypted_id"
-
-	def get_object(self):
-		enc_id = self.kwargs['encrypted_id']
-		try:
-			pk = decode_id(enc_id)
-		except:
-			raise NotFound("Invoice Not Found")
-		return get_object_or_404(Invoice, pk=pk)
-	
-class InvoiceDeleteView(generics.DestroyAPIView):
-	queryset = Invoice.objects.all()
-	serializer_class = InvoiceSerializer
 	lookup_url_kwarg = "encrypted_id"
 
 	def get_object(self):
