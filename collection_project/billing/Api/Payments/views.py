@@ -13,39 +13,13 @@ class PaymentListView(generics.ListAPIView):
 	queryset = Payment.objects.all()
 	serializer_class = PaymentEncodeSerializer
 
-class PaymentRetrieveView(generics.RetrieveAPIView):
+class PaymentDetailView(generics.RetrieveUpdateDestroyAPIView):
 	queryset = Payment.objects.all()
 	serializer_class = PaymentEncodeSerializer
 	lookup_url_kwarg = 'encrypted_id'
 
 	def get_object(self):
 		enc_id = self.kwargs('encryypted_id')
-		try:
-			pk = decode_id(enc_id)
-		except:
-			NotFound('Payment Not Found')
-		return get_object_or_404(Payment, pk=pk)
-
-class PaymentUpdateView(generics.UpdateAPIView):
-	queryset = Payment.objects.all()
-	serializer_class = PaymentSerializer
-	lookup_url_kwarg = 'encrypted_id'
-
-	def get_object(self):
-		enc_id = self.kwargs['encrypted_id']
-		try:
-			pk = decode_id(enc_id)
-		except:
-			NotFound('Payment Not Found')
-		return get_object_or_404(Payment, pk=pk)
-	
-class PaymentDeleteView(generics.DestroyAPIView):
-	queryset = Payment.objects.all()
-	serializer_class = PaymentEncodeSerializer
-	lookup_url_kwarg = 'encrypted_id'
-
-	def get_object(self):
-		enc_id = 'encrypted_id'
 		try:
 			pk = decode_id(enc_id)
 		except:
