@@ -1,14 +1,28 @@
-from ...Models.InvoiceModel import Invoice
-from utils.sign import encode_id
 from rest_framework import serializers
+from ...Models.InvoiceModel import Invoice
+from utils.sign import encode_id, decode_id
+from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import ValidationError
 
 class InvoiceSerializer(serializers.ModelSerializer):
-	customer = serializers.CharField(source='customer.name', read_only=True)
+	#customer = serializers.CharField(source='customer.name', read_only=True)
+	#customer_name = serializers.CharField(source='customer.name', read_only=True)
 	class Meta:
 		model = Invoice
 		fields = '__all__'
 		read_only_fields = ['id', 'created_at', 'update_at', 'paid_amount']
 
+	def to_internal_value(self, data):
+			data = data.copy()
+
+			if 'customer' in data:
+				try:
+					data['customer'] = decode_id(data['customer'])
+				except:
+					raise NotFound("Invoice Not Found")
+				return super().to_internal_value(data)
+			else:
+				raise ValidationError({"error": "You need customer."})
 
 class InvoiceEncodeSerializer(serializers.ModelSerializer):
 	id = serializers.SerializerMethodField()
