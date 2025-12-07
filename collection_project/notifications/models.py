@@ -26,5 +26,9 @@ class ReminderLog(models.Model):
 		choices=StatusChooise.choices,
 		default=StatusChooise.DRAFT
 	)
+	preview = models.TextField(blank=True, null=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	update_at = models.DateTimeField(auto_now=True)
+
+	def __str__(self):
+		return f'{self.invoice.source_system}:{self.invoice.external_invoice_id} -> {self.invoice.customer}'
