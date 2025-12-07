@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from ...Models.InvoiceModel import Invoice
 from utils.sign import encode_id, decode_id
-from rest_framework.exceptions import NotFound
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import NotFound, ValidationError
 
 class InvoiceSerializer(serializers.ModelSerializer):
 	class Meta:
