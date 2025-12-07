@@ -5,6 +5,7 @@ from rest_framework.exceptions import NotFound
 from django.shortcuts import get_object_or_404
 from .serializers import ReminderLogSerializer
 from billing.Models.InvoiceModel import Invoice
+from permission.n8n_permission import N8nPermission
 
 def get_invoice(encrypted_id=''):
 	try:
@@ -18,6 +19,7 @@ def get_invoice(encrypted_id=''):
 class ReminderLogCreateView(generics.CreateAPIView):
 	queryset = ReminderLog.objects.all()
 	serializer_class = ReminderLogSerializer
+	permission_classes = [N8nPermission]
 	
 	def perform_create(self, serializer):
 		invoice = get_invoice(self.kwargs['invoice_id'])
@@ -27,7 +29,8 @@ class ReminderLogCreateView(generics.CreateAPIView):
 
 class ReminderLogGetView(generics.ListAPIView):
 	serializer_class = ReminderLogSerializer
-
+	permission_classes = [N8nPermission]
+	
 	def get_queryset(self):
 		invoice = get_invoice(self.kwargs['invoice_id'])
 		queryset = ReminderLog.objects.filter(invoice=invoice).order_by('-sent_at')

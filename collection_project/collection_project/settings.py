@@ -141,3 +141,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #Encode Decode SALT CODE
 SALT = env("SALT_CODE", "öylesine bir şeyler koysana buraya kardeşim. 256 ile hashle bişi yap.")
+N8N = env("X-INTEGRATION-TOKEN", "öylesine bir şeyler koysana buraya kardeşim. 256 ile hashle bişi yap.")
