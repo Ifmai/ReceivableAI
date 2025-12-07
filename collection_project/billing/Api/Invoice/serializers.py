@@ -9,6 +9,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
 		fields = '__all__'
 		read_only_fields = ['id', 'created_at', 'update_at', 'paid_amount']
 
+	#Django rest framework arayüzünden deneme yaparken bu kısımları yorum satırına alın.
 	def to_internal_value(self, data):
 			data = data.copy()
 
