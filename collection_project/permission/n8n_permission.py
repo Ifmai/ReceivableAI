@@ -9,5 +9,6 @@ class N8nPermission(permissions.BasePermission):
 		try:
 			encode = decode_key(hashed_key)
 		except:
+			self.message = '<3 <3 <3 <3'
 			return False
 		return True
