@@ -28,7 +28,8 @@ class InvoiceEncodeSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Invoice
-		exclude = ['created_at', 'updated_at']
+		fields = '__all__'
+		read_only_fields = ['created_at', 'updated_at']
 
 	def get_id(self, obj):
 		return encode_id(obj.pk)
