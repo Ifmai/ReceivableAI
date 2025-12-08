@@ -2,3 +2,6 @@ env
 .env
 *_initial.py
 00*_*.py
+none_clear.sh
+out
+mytest.py
