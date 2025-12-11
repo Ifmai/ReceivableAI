@@ -1,14 +1,25 @@
-# Django settings
-DJANGO_SECRET_KEY=replace_me_with_a_secure_key
+DJANGO_SECRET_KEY=secret-key
 DJANGO_DEBUG=True
-
-# Database (Postgres)
-POSTGRES_DB=ai_collections_db
-POSTGRES_USER=ai_collections_user
-POSTGRES_PASSWORD=supersecretpassword
-POSTGRES_HOST=db
-POSTGRES_PORT=5432
-
+SALT_CODE=salt_code
+SALT_N8N_MESSAGE=omg_token_salt
+N8N_MESSAGE=omg_token_request
 
 # Django specific
 ALLOWED_HOSTS=localhost,127.0.0.1
+
+POSTGRES_PASSWORD=secure_password
+POSTGRES_HOST=collection_project_db
+POSTGRES_USER=user_123
+POSTGRES_PORT=5432
+POSTGRES_DB=project_dbb
+DATABASE_URL=postgres://.....
+
+#N8N
+N8N_ENCRYPTION_KEY=super-secret-key
+N8N_USER_MANAGEMENT_JWT_SECRET=even-more-secret
+N8N_DEFAULT_BINARY_DATA_MODE=filesystem
+GENERIC_TIMEZONE=Europe/Istanbul
+TIMEZONE=Europe/Istanbul
+N8N_HOST=localhost
+N8N_PORT=7000
+N8N_PYTHON_ALLOW_ENV=true
