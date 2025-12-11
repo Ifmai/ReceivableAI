@@ -8,6 +8,7 @@ from django.db.models import Sum, F, Count, Q
 from rest_framework.exceptions import NotFound
 from django.shortcuts import get_object_or_404
 from ...Models.InvoiceModel import Invoice, Status
+from .serializers import InvoiceEncodeSerializer
 
 
 def aggregate_amounts_by_currency(qs):
@@ -99,12 +100,13 @@ class CustomerReportsSummary(generics.GenericAPIView):
 
         amount_currency_qs = aggregate_amounts_by_currency(qs)
         amount_currency = build_amount_dict_by_currency(amount_currency_qs)
-        top_5_quest = qs.upcoming(days=7).order_by('-due_date')[:5]
-        
+        top_5_qs = qs.upcoming(days=7).order_by('-due_date')[:5]
+        top_5_quest = InvoiceEncodeSerializer(top_5_qs, many=True).data
+
         return Response({
             "customer": customer.name,
             "counts": count,
             "amounts_by_currency": amount_currency,
             "up_coming_5_invoice": top_5_quest
-        }) 
+        })
     
