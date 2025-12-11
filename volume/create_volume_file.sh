@@ -1,1 +1,2 @@
 mdkri postgres_data
+mdkri n8n_data
