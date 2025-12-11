@@ -1,6 +1,6 @@
 from django.urls import path, include
 from .Invoice.views import *
-from .Invoice.reports_view import InvoiceReportsSummary
+from .Invoice.reports_view import InvoiceReportsSummary, CustomerReportsSummary
 from .Payments.views import *
 
 urlpatterns = [
@@ -10,7 +10,6 @@ urlpatterns = [
     path("invoices/upcoming/", InvoiceUpcomingView.as_view(), name="invoice_upcoming"),
     path("invoices/overdue/", InvoiceOverDueView.as_view(), name="invoice_overdue"),
     path("invoices/detail/<str:encrypted_id>/", InvoiceDetailView.as_view(), name="invoice_detail"),
-    path("invoices/reports/summary/", InvoiceReportsSummary.as_view(), name="invoice_summary"),
     # Invoice Urls End
     # Payment Urls Start
     path("payments/add/", PaymentCreateView.as_view(), name="Payment_create"),
@@ -20,4 +19,9 @@ urlpatterns = [
     # Integration Urls (n8n vb. için) Start
     path("integrations/", include("billing.Api.N8N.urls")),
     # Integration Urls (n8n vb. için) End
+
+    #Reports Endpoint Start
+    path("reports/invoice/summary/", InvoiceReportsSummary.as_view(), name="invoice_summary"),
+    path("reports/customers/<str:customer_id>/", CustomerReportsSummary.as_view(), name="invoice_summary"),
+    #Reports Endpoint End
 ]
