@@ -31,7 +31,7 @@ SECRET_KEY = env("DJANGO_SECRET_KEY", "dev-secret")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DJANGO_DEBUG", "True")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['34.179.175.105', 'localhost']
 
 
 # Application definition
@@ -89,11 +89,11 @@ WSGI_APPLICATION = 'collection_project.wsgi.application'
 DATABASES = {
     'default': {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": env("POSTGRES_DB", "def-name"),
+        "NAME": env("POSTGRES_DB", ""),
         "USER": env("POSTGRES_USER", ""),
         "PASSWORD": env("POSTGRES_PASSWORD", ""),
-        "HOST": env("POSTGRES_HOST"),
-        "PORT": env("POSTGRES_PORT")
+        "HOST": env("POSTGRES_HOST", ""),
+        "PORT": env("POSTGRES_PORT", ""),
     }
 }
 
@@ -141,4 +141,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #Encode Decode SALT CODE
 SALT = env("SALT_CODE", "öylesine bir şeyler koysana buraya kardeşim. 256 ile hashle bişi yap.")
-N8N = env("X-INTEGRATION-TOKEN", "öylesine bir şeyler koysana buraya kardeşim. 256 ile hashle bişi yap.")
+N8N_SALT = env("SALT_N8N_MESSAGE", "öylesine bir şeyler koysana buraya kardeşim. 256 ile hashle bişi yap.")
+N8N_MESSAGE = env("N8N_MESSAGE", "öylesine bir şeyler koysana buraya kardeşim. 256 ile hashle bişi yap.")
