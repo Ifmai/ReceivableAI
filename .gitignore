@@ -5,3 +5,4 @@ env
 none_clear.sh
 out
 mytest.py
+__pycache__
