@@ -1,0 +1,495 @@
+{
+  "name": "ai-collection",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1472,
+        -80
+      ],
+      "id": "6111fd50-f32e-4122-b460-872e06831e23",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "http://34.179.175.105:8000/api/billing/integrations/invoices/reminder-candidates/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-INTEGRATION-TOKEN",
+              "value": "={{ $json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -880,
+        -80
+      ],
+      "id": "80e28e3a-e8a3-4d91-8c26-86281b840245",
+      "name": "reminder_candidates"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "import json\nimport time\nimport base64\nimport hashlib\nimport hmac\n\n# ---------------- Input ----------------\nitem = items[0][\"json\"]\n\nobj = item.get(\"message\")\nsalt = item.get(\"salt\")\nsecret_key = item.get(\"secret_key\")\n\nif obj is None:\n    raise Exception(\"Missing field: message\")\nif salt is None:\n    raise Exception(\"Missing field: salt\")\nif secret_key is None:\n    raise Exception(\"Missing field: secret_key\")\n\n\n# ---------------- Django-compatible helpers ----------------\n\nBASE62_ALPHABET = \"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\"\n\ndef base62_encode(num: int) -> str:\n    if num == 0:\n        return \"0\"\n    encoded = \"\"\n    while num > 0:\n        num, rem = divmod(num, 62)\n        encoded = BASE62_ALPHABET[rem] + encoded\n    return encoded\n\ndef b64_encode(data: bytes) -> str:\n    \"\"\"Django: urlsafe_base64 + padding (=) kaldırılır\"\"\"\n    return base64.urlsafe_b64encode(data).decode().rstrip(\"=\")\n\ndef salted_hmac(key_salt: str, value: str, secret: str, algorithm: str = \"sha256\"):\n    \"\"\"\n    Django salted_hmac birebir:\n      key = hash(key_salt + secret)\n      return HMAC(key, value)\n    \"\"\"\n    hasher = getattr(hashlib, algorithm)\n    key = hasher((key_salt + secret).encode()).digest()\n    return hmac.new(key, msg=value.encode(), digestmod=hasher)\n\n# ---------------- Django signing.dumps logic ----------------\n\n# (1) Objeyi JSON encode et\njson_data = json.dumps(obj, separators=(\",\", \":\")).encode(\"latin-1\")\n\n# (2) JSON’u base64-url formatına çevir (padding yok)\nbase64_value = b64_encode(json_data)      # e.g. 'Im1lc3NhZ2VfMSI'\n\n# (3) Timestamp'i base62 olarak ekle\ntimestamp = base62_encode(int(time.time()))\nunsigned = f\"{base64_value}:{timestamp}\"  # e.g. 'Im1lc3NhZ2VfMSI:1vTKo1'\n\n# (4) HMAC SHA-256 signature (salt + \"signer\")\nkey_salt = salt + \"signer\"\nsignature = b64_encode(salted_hmac(key_salt, unsigned, secret_key).digest())\n\n# (5) Django final token: \"<b64(obj)>:<ts>:<signature>\"\ntoken = f\"{unsigned}:{signature}\"\n\n# ---------------- Output ----------------\nitems[0][\"json\"][\"token\"] = token\nreturn items\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1104,
+        -80
+      ],
+      "id": "4ae25d4c-e1c3-4fdf-88bd-9846d44e9916",
+      "name": "create_key"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Bu node env'den okuyor ve Python node'a JSON üzerinden paslıyor\nreturn [\n  {\n    json: {\n      message: $env.MESSAGE,         // message_1\n      salt: $env.SALT,               // omg_token\n      secret_key: $env.SECRET_KEY    // django secret key\n      // istersen direkt $env.DJANGO_SECRET_KEY de kullanabilirsin\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        -80
+      ],
+      "id": "fea49371-2427-4d09-9ad2-af4997e4d0a0",
+      "name": "get_env"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Invoice data:\n\nid: {{ $json.id }}\ninvoice_id: {{ $json.external_invoice_id }}\ncustomer_email: {{ $json.customer_email }}\ntotal_amount: {{ $json.total_price }}\ncurrency: {{ $json.currency }}\ndue_date: {{ $json.due_date }}\nstatus: {{ $json.status }}\n\nGenerate the email now.\n",
+        "options": {
+          "systemMessage": "=You are an advanced AI agent that generates customer-facing invoice reminder emails in Turkish.\n\nImportant rules:\n- Never address the customer as \"Sayın {email}\". Email is NOT a name.\n- If you do not have a real person/company name, use a neutral greeting like:\n  \"Merhaba,\" or \"Merhaba Değerli Müşterimiz,\"\n- Do not invent a name. Do not guess.\n- Do not mention automation, AI, systems, or internal processes.\n- Keep it professional, clear, and concise (plain text, no HTML).\n- Always include: invoice_id, due_date, amount, currency, and status meaning (overdue/pending).\n\nTone:\n- If status is OVERDUE: firm but respectful, urgency-focused.\n- If status is PENDING: friendly and soft reminder.\n\nOUTPUT MUST BE VALID JSON ONLY with EXACTLY these fields:\n- send_mail (string, recipient email)\n- id\n- subject (string)\n- body (string)\n\nNo extra fields. No explanations.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -656,
+        -80
+      ],
+      "id": "5548281a-e6a5-455a-8b3d-4baba800323a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sendTo": "=dosya.x.info@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.body }}",
+        "options": {
+          "senderName": "XXXX Dükkanı"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        272,
+        -64
+      ],
+      "id": "81d50895-aaa1-4570-9129-e97b2555620f",
+      "name": "Send a message",
+      "webhookId": "a9f2f0b5-8a69-4a4c-b236-6898a190172c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "wjHgP1ZKzezO26Uc",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -288,
+        -80
+      ],
+      "id": "a705373a-5bea-4fdd-baa4-3769c21f754d",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3d7dbcde-1a26-4ca7-ac23-039263bd09b7",
+              "name": "labelIds",
+              "value": "={{ $json.labelIds.find(item => \"SENT\") }}",
+              "type": "string"
+            },
+            {
+              "id": "ba63ecdf-b91a-44fc-adc9-89e13b40ab47",
+              "name": "invoice_id",
+              "value": "={{ $('Code in Python (Beta)1').item.json.invoice_id }}",
+              "type": "string"
+            },
+            {
+              "id": "30b3667b-7d16-4a3f-842c-ae4e30f50f59",
+              "name": "subject",
+              "value": "={{ $('Code in Python (Beta)1').item.json.body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        -64
+      ],
+      "id": "ad4854c2-22d9-4f9f-9c34-d513eab576c1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "import json\nfrom collections.abc import Mapping\n\ndef strip_code_fences(s: str) -> str:\n    s = s.strip()\n    if s.startswith(\"```\"):\n        lines = s.splitlines()\n        if lines and lines[0].startswith(\"```\"):\n            lines = lines[1:]\n        if lines and lines[-1].strip() == \"```\":\n            lines = lines[:-1]\n        s = \"\\n\".join(lines).strip()\n    return s\n\n# n8n: tek item bekleniyor\nroot = items[0].get(\"json\", {})\n\n# Agent output'u bazen output içinde, bazen direkt root\nmail_obj = root.get(\"output\", root)\n\n# String ise JSON parse et\nif isinstance(mail_obj, str):\n    mail_obj = json.loads(strip_code_fences(mail_obj))\n\n# Güvenlik\nif not isinstance(mail_obj, Mapping):\n    return [{\n        \"json\": {\n            \"error\": \"Mail objesi dict değil\",\n            \"raw\": mail_obj\n        }\n    }]\n\nsubject = mail_obj.get(\"subject\")\nbody = mail_obj.get(\"body\")\nsend_mail = mail_obj.get(\"send_mail\")\ninvoice_id = mail_obj.get(\"id\")\n\nif not all([subject, body, send_mail, invoice_id]):\n    return [{\n        \"json\": {\n            \"error\": \"Eksik alan var\",\n            \"available_keys\": list(mail_obj.keys()),\n            \"mail_obj\": mail_obj\n        }\n    }]\n\nreturn [{\n    \"json\": {\n        \"subject\": subject,\n        \"body\": body,\n        \"send_mail\": send_mail,\n        \"invoice_id\": invoice_id\n    }\n}]\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        -64
+      ],
+      "id": "8ed01864-34f4-47d6-8e54-f92c51123d8f",
+      "name": "Code in Python (Beta)1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        96
+      ],
+      "id": "f8204d5c-5e13-40fc-9793-4ee8cae490a0",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "exAeDjS1ToF9n6v1",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7f7d2b12-0735-43a5-88ec-444e61e53df4",
+              "leftValue": "={{ $json.labelIds }}",
+              "rightValue": "SENT",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        736,
+        -64
+      ],
+      "id": "1ddb33f3-326b-4f58-801b-baf7bf6e9e1c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://collection-project:8000/api/notifications/invoices/MQ:1vUOOT:70M2chQAJbjktGus-RTyEFcEloHfwBNWz8yn6HLIeTw/reminders/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-INTEGRATION-TOKEN",
+              "value": "={{ $('create_key').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "channel",
+              "value": "EMAIL"
+            },
+            {
+              "name": "sent_at",
+              "value": "2025-12-11T15:49:33.027851Z"
+            },
+            {
+              "name": "subject",
+              "value": "adasufuosdhoufsdoufahdsuoı"
+            },
+            {
+              "name": "status",
+              "value": "SENT"
+            },
+            {
+              "name": "preview",
+              "value": "sdoıfupıehwrpufohruofproff"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        960,
+        -288
+      ],
+      "id": "008599cd-9bca-4b8a-84ea-f23ca6e30ff1",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://collection-project:8000/api/notifications/invoices/MQ:1vUOOT:70M2chQAJbjktGus-RTyEFcEloHfwBNWz8yn6HLIeTw/reminders/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-INTEGRATION-TOKEN",
+              "value": "={{ $('create_key').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "channel",
+              "value": "EMAIL"
+            },
+            {
+              "name": "sent_at",
+              "value": "2025-12-11T15:49:33.027851Z"
+            },
+            {
+              "name": "subject",
+              "value": "adasufuosdhoufsdoufahdsuoı"
+            },
+            {
+              "name": "status",
+              "value": "FAILED"
+            },
+            {
+              "name": "preview",
+              "value": "sdoıfupıehwrpufohruofproff"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        976,
+        96
+      ],
+      "id": "fb8e6600-042f-49c3-97da-a0621ac3178c",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "get_env",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "reminder_candidates": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_key": {
+      "main": [
+        [
+          {
+            "node": "reminder_candidates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_env": {
+      "main": [
+        [
+          {
+            "node": "create_key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Code in Python (Beta)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in Python (Beta)1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e60b122f-e2e2-4490-a9e2-1289b4224777",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "20lOm1u9OrJqYF15",
+  "tags": []
+}
