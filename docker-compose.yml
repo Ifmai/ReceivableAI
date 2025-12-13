@@ -35,7 +35,7 @@ x-n8n-base: &n8n-base
     - .env
 
 services:
-  collection_project:
+  collection-project:
     image: ifmai/collection_project_image
     container_name: collection_project_container
     build:
