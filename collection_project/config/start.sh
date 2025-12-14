@@ -17,4 +17,11 @@ done
 python manage.py makemigrations
 python manage.py migrate
 
+# Collect static files for Nginx to serve
+echo "Collecting static files..."
+python manage.py collectstatic --noinput || echo "collectstatic failed or nothing to collect"
+# Ensure static folder permissions
+mkdir -p /collection_project/staticfiles || true
+chown -R root:root /collection_project/staticfiles || true
+
 exec "$@"
