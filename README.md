@@ -10,6 +10,17 @@ Bu repo, fatura yönetimi, ödemeler ve hatırlatmalar için hazırlanmış bir 
 - Raporlama endpointleri
 - n8n entegrasyonları ve webhook desteği
 
+Technology Stack
+----------------
+| Category | Technology |
+|---|---|
+| Backend Framework | ![Django REST](https://img.shields.io/badge/Django%20REST-092E20?style=for-the-badge&logo=django&logoColor=white) |
+| Database | ![Postgres](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white) |
+| Containerization & Services | ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)&nbsp;![n8n](https://img.shields.io/badge/n8n-6CC24A?style=for-the-badge) |
+| Languages | ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white) |
+| Development Tools | ![VSCode](https://img.shields.io/badge/VSCode-007ACC?style=for-the-badge&logo=visual-studio-code)&nbsp;![Postman](https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman) |
+| Libraries (from `requirements.txt`) | ![Django 4.0](https://img.shields.io/badge/Django-4.0-092E20?style=for-the-badge&logo=django&logoColor=white)&nbsp;![DRF 3.15.1](https://img.shields.io/badge/DRF-3.15.1-00BCD4?style=for-the-badge)&nbsp;![django-filter 23.5](https://img.shields.io/badge/django--filter-23.5-8A2BE2?style=for-the-badge)&nbsp;![Pillow 10.4.0](https://img.shields.io/badge/Pillow-10.4.0-FFB6C1?style=for-the-badge)&nbsp;![Requests 2.32.3](https://img.shields.io/badge/Requests-2.32.3-005A9C?style=for-the-badge)&nbsp;![psycopg2-binary 2.9.9](https://img.shields.io/badge/psycopg2--binary-2.9.9-336791?style=for-the-badge) |
+
 Gereksinimler
 ----------------
 - Python 3.11
