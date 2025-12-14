@@ -87,6 +87,7 @@ Docker komutları (kısa)
 - Yönetim komutları: [collection_project/manage.py](collection_project/manage.py)
 - Docker Compose: [docker-compose.yml](docker-compose.yml)
 - Dökümantasyon: [docs/PROJECT_DOCUMENTATION.md](docs/PROJECT_DOCUMENTATION.md)
+- Dokümantasyon (detaylı): [docs/README.md](docs/README.md)
 
 API kısa açıklama
 -------------------
