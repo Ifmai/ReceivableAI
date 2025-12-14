@@ -1,4 +1,4 @@
-AI-Collections — Fatura, Ödeme & Hatırlatma Servisi
+ReceivableAI — Fatura, Ödeme & Hatırlatma Servisi
 ------------------
 
 Bu repo, fatura yönetimi, ödemeler ve hatırlatmalar için hazırlanmış bir Django REST servisidir. Servis Docker ile çalışacak şekilde yapılandırılmıştır ve n8n ile entegrasyon desteği içerir.
