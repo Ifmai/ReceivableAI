@@ -1,86 +1,111 @@
-# AI-Collections — Billing, Payments & Reminder Microservice
+AI-Collections — Fatura, Ödeme & Hatırlatma Servisi
 
-## Index
-- [Technology Stack](#technology-stack)
-- [Usage](#usage)
-- [Architecture Diagram](#architecture-diagram)
-- [DB Diagram](#db-diagram)
-- [Supported Features](#supported-features)
+Bu repo, fatura yönetimi, ödemeler ve hatırlatmalar için hazırlanmış bir Django REST servisidir. Servis Docker ile çalışacak şekilde yapılandırılmıştır ve n8n ile entegrasyon desteği içerir.
 
-## Technology Stack
+Önemli özellikler
+------------------
+- Fatura CRUD işlemleri
+- Ödeme kaydı ve eşleme
+- Hatırlatma (reminder) loglama ve tetikleme
+- Raporlama endpointleri
+- n8n entegrasyonları ve webhook desteği
 
-| Category | Technology |
-|---------|------------|
-| Server | NGINX |
-| Backend Framework | Django REST Framework |
-| Database | PostgreSQL |
-| Containerization | Docker / Docker Compose |
-| Messaging / Automation | n8n |
-````markdown
-# AI-Collections — Fatura, Ödeme & Hatırlatma Servisi
+Gereksinimler
+----------------
+- Python 3.11
+- Docker & Docker Compose (opsiyonel ama önerilir)
+- PostgreSQL (Docker ile otomatik sağlanır)
 
-Kısa açıklama: Bu proje, faturaların, ödemelerin ve hatırlatmaların yönetildiği bir Django REST servisidir. Docker ile çalışacak şekilde yapılandırılmıştır.
+Hızlı Kurulum (Docker ile) — önerilen
+------------------------------------------------
+1. Ortam değişkeni şablonunu kullanarak `.env` oluşturun:
 
-## Hızlı Başlangıç
+	 - Kök dizindeki `env_template` dosyasını inceleyin ve kopyalayın:
 
-1. Ortam değişkenlerini ayarlayın. `env_template` dosyasını kullanarak `.env` oluşturun ve özellikle aşağılarını doldurun:
-	- `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`
-	- `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`
-	- `SALT_CODE`, `X-INTEGRATION-TOKEN` (n8n entegrasyon için)
+		 cp env_template .env
 
-2. Docker ile başlatma (önerilen):
+	 - Önemli değişkenler:
+		 - `DJANGO_SECRET_KEY` — Django secret key
+		 - `DJANGO_DEBUG` — `True`/`False`
+		 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`
+		 - `SALT_CODE`, `X-INTEGRATION-TOKEN` (n8n veya entegrasyonlar için)
+
+2. Servisleri ayağa kaldırın:
 
 ```bash
-make up        # servisleri ayağa kaldırır
-make down      # durdurur
-make re        # yeniden başlatır
+docker-compose up --build
+# veya repository içinde tanımlı ise
+make up
 ```
 
-3. Docker kullanmadan geliştirme:
+3. Veritabanı migrasyonlarını uygula (container içinde veya yönetim konteyneri ile):
+(Dev aşamasında çalıştırırken hızlı yapabilmeniz için start.sh dosyasında yazılmıştır. /config/start.sh)
 
 ```bash
-python -m venv .env
-source .env/bin/activate
-pip install -r collection_project/config/requirements.txt
+docker exec web python collection_project/manage.py migrate
+```
+
+Geliştirme (Docker olmadan)
+---------------------------------
+1. Sanal ortam oluşturun ve aktif edin:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+2. Bağımlılıkları yükleyin:
+
+```bash
+pip install -r config/requirements.txt
+```
+
+3. Veritabanı ayarlarını yapın (env) ve migrasyonları çalıştırın, ardından server'ı başlatın:
+
+```bash
 python collection_project/manage.py migrate
 python collection_project/manage.py runserver
 ```
 
-## Önemli Dosyalar ve Konumlar
-
-- Proje ayarları: `collection_project/collection_project/settings.py`
-- Yönetim komutları: `collection_project/manage.py`
-- Docker Compose: `docker-compose.yml`
-- Başlangıç scripti: `collection_project/config/start.sh`
-- Proje dökümü: `docs/PROJECT_DOCUMENTATION.md`
-
-## API Özet (Hızlı)
-
-- Sağlık: GET `/api/health/`
-- Müşteriler: `/api/customers/`
-- Faturalar: `/api/billing/invoices/` (create, list, detail)
-- Ödemeler: `/api/billing/payments/`
-- Raporlar: `/api/billing/reports/` (InvoiceReportsSummary, CustomerReportsSummary)
-- N8N entegrasyonları: `/api/billing/integrations/` (X-INTEGRATION-TOKEN ile korunmuş olabilir)
-
-Detaylı API endpointleri ve request/response örnekleri için `docs/PROJECT_DOCUMENTATION.md` dosyasına bakın.
-
-## Testler
-
-Projede Django testleri bulunur. Çalıştırmak için:
+Örnek data seti yüklemek için
+--------
+Docker ile içeriye gönderdiğim test.py dosyasını çalıştırarak ekleyebilirsiniz:
 
 ```bash
-python collection_project/manage.py test
+docker exec collection_project_container python test.py
 ```
 
-## Katkıda Bulunma
+Docker komutları (kısa)
+------------------------
+- `make up` — Servisleri ayağa kaldırır (eğer `Makefile` var ve yapılandırılmışsa)
+- `make down` — Servisleri durdurur
+- `make re` — Yeniden başlatır
 
-- Yeni özellik için branch açın.
-- Değişikliklere test ekleyin.
-- PR gönderin ve açıklama ekleyin.
+Önemli dosyalar
+----------------
+- Proje ayarları: [collection_project/collection_project/settings.py](collection_project/collection_project/settings.py)
+- Yönetim komutları: [collection_project/manage.py](collection_project/manage.py)
+- Docker Compose: [docker-compose.yml](docker-compose.yml)
+- Dökümantasyon: [docs/PROJECT_DOCUMENTATION.md](docs/PROJECT_DOCUMENTATION.md)
 
-## Lisans
+API kısa açıklama
+-------------------
+- Sağlık kontrolü: `GET /api/health/`
+- Müşteri endpointleri: `/api/customers/`
+- Fatura endpointleri: `/api/billing/invoices/`
+- Ödeme endpointleri: `/api/billing/payments/`
+- Raporlama: `/api/billing/reports/`
 
-Root dizinde lisans dosyası yok. İsterseniz MIT veya uygun başka bir lisans ekleyin.
+Katkıda bulunma
+------------------
+1. Yeni bir branch oluşturun: `git checkout -b feature/isim`
+2. Değişikliklerinize test ekleyin.
+3. PR oluşturun ve açıklama ekleyin.
 
-````
+Lisans
+-------
+Bu proje MIT lisansı ile lisanslanmıştır. Lisans metni için kök dizindeki [LICENSE](LICENSE) dosyasına bakın.
+
+İletişim
+---------
+Projeyle ilgili sorular veya katkı teklifleri için repository sahibi ile iletişime geçin.
