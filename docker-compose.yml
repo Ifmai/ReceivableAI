@@ -55,6 +55,20 @@ services:
     depends_on:
       - collection_project_db
 
+  nginx:
+    image: nginx:stable-alpine
+    container_name: ai-collections-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./collection_project/staticfiles:/staticfiles:ro
+    networks:
+      - ai-collections-network
+    depends_on:
+      - collection-project
+    restart: always
+
   n8n:
     <<: *n8n-base
     container_name: ai-collections-n8n
